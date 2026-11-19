@@ -565,11 +565,11 @@
                     <div class="grid grid-cols-3 gap-2">
                         <div>
                             <label class="text-[8px] text-slate-400 font-black uppercase block mb-1">Comida (€)</label>
-                            <input type="number" step="0.01" x-model.number="precios.comida" @input="guardarPrecios()" placeholder="13.50" class="input-dark !p-2 !text-xs">
+                            <input type="number" step="0.01" x-model.number="precios.comida" @input="guardarPrecios()" placeholder="13.63" class="input-dark !p-2 !text-xs">
                         </div>
                         <div>
                             <label class="text-[8px] text-slate-400 font-black uppercase block mb-1">Cena (€)</label>
-                            <input type="number" step="0.01" x-model.number="precios.cena" @input="guardarPrecios()" placeholder="10.50" class="input-dark !p-2 !text-xs">
+                            <input type="number" step="0.01" x-model.number="precios.cena" @input="guardarPrecios()" placeholder="11.35" class="input-dark !p-2 !text-xs">
                         </div>
                         <div>
                             <label class="text-[8px] text-slate-400 font-black uppercase block mb-1">Partido (€)</label>
@@ -915,7 +915,7 @@
                 res: { hTotal: '06:00', kmTotal: 0 },
                 
                 mostrarPrecios: false,
-                precios: { fijoMensual: 2215.97, hOrd: 0.00, hExt: 15.14, hNoc: 2.65, horasBaseCiclo: 160, comida: 13.50, cena: 10.50, partido: 11.00, festivo: 145.41, pctRetencion: 24.23 },
+                precios: { fijoMensual: 2215.97, hOrd: 0.00, hExt: 15.14, hNoc: 2.65, horasBaseCiclo: 160, comida: 13.63, cena: 11.35, partido: 11.00, festivo: 145.41, pctRetencion: 24.23 },
                 estimacion: { subFijo: '2215.97', subHoras: '0.00', subExtras: '0.00', subNocturna: '0.00', subComidas: '0.00', subCenas: '0.00', subPartidos: '0.00', subFestivos: '0.00', totalBruto: '0.00', subDeducciones: '0.00', netoTotal: '0.00', hOrdinariasStr: '0:00', hExtrasStr: '0:00', hNocturnasStr: '0:00', cntComidas: 0, cntCenas: 0, cntPartidos: 0, cntFestivos: 0 },
 
                 modalCalc: false,
@@ -979,7 +979,7 @@
                     });
 
                     idb.get('bus_precios').then(pr => {
-                        if (pr) this.precios = Object.assign({ fijoMensual: 2215.97, hOrd: 0.00, hExt: 15.14, hNoc: 2.65, horasBaseCiclo: 160, comida: 13.50, cena: 10.50, partido: 11.00, festivo: 145.41, pctRetencion: 24.23 }, pr);
+                        if (pr) this.precios = Object.assign({ fijoMensual: 2215.97, hOrd: 0.00, hExt: 15.14, hNoc: 2.65, horasBaseCiclo: 160, comida: 13.63, cena: 11.35, partido: 11.00, festivo: 145.41, pctRetencion: 24.23 }, pr);
                         this.calcularTotales();
                     });
 
@@ -1345,17 +1345,19 @@
 
                     const evaluarTramoDietas = (inicioMin, duracionMin, finMin) => {
                         if (inicioMin === null || finMin === null || duracionMin <= 0) return;
-                        const horasTrabajadas = duracionMin / 60;
                         
-                        // 1. REGLA COMIDA: Entrada antes de las 12:30 (750 min)
-                        // Más de 9h y salida >= 15:00 (900 min) O más de 6h y salida >= 15:30 (930 min)
-                        if (inicioMin < 750) {
-                            if (horasTrabajadas > 9 && finMin >= 900 && finMin <= 1320) { autoComida = true; }
-                            if (horasTrabajadas > 6 && finMin >= 930 && finMin <= 1320) { autoComida = true; }
+                        // 1. REGLA OFICIAL COMIDA (Acuerdo Colectivo 2026):
+                        // Iniciados antes de las 13:00 h (780 min)
+                        // - Duración > 6,00 h (360 min) e inferior a 9,00 h (540 min) y finaliza >= 15:30 h (930 min)
+                        // - Duración >= 9,00 h (540 min) y finaliza >= 15:00 h (900 min)
+                        if (inicioMin < 780) {
+                            if (duracionMin >= 540 && finMin >= 900 && finMin <= 1320) { autoComida = true; }
+                            if (duracionMin > 360 && duracionMin < 540 && finMin >= 930 && finMin <= 1320) { autoComida = true; }
                         }
 
-                        // 2. REGLA CENA: Mínimo 6h trabajadas y salida a las 23:00 (1380 min) o después
-                        if (horasTrabajadas >= 6 && (finMin >= 1380 || finMin <= 360)) {
+                        // 2. REGLA OFICIAL CENA (Acuerdo Colectivo 2026):
+                        // Duración estrictamente superior a 6,00 h (361 min o más) y finaliza >= 23:00 h (1380 min)
+                        if (duracionMin > 360 && (finMin >= 1380 || finMin <= 360)) {
                             autoCena = true;
                         }
                     };
@@ -1563,8 +1565,8 @@
                     let sH = (fijoBase > 0) ? 0 : (hOrdComp * (Number(this.precios.hOrd) || 0));
                     let sE = hExtComp * (Number(this.precios.hExt) || 15.14);
                     let sN = (cicloNocMins / 60) * (Number(this.precios.hNoc) || 2.65);
-                    let sCom = cicloComidas * (Number(this.precios.comida) || 13.50);
-                    let sCen = cicloCenas * (Number(this.precios.cena) || 10.50);
+                    let sCom = cicloComidas * (Number(this.precios.comida) || 13.63);
+                    let sCen = cicloCenas * (Number(this.precios.cena) || 11.35);
                     let sP = cicloPartidos * (Number(this.precios.partido) || 11.00);
                     let sF = cicloFestivos * (Number(this.precios.festivo) || 145.41);
                     
