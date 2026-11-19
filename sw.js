@@ -1,4 +1,4 @@
-const CACHE_NAME = 'med-bus-v1-4-40';
+const CACHE_NAME = 'med-bus-v1-4-40-r1';
 
 const ASSETS_TO_CACHE = [
   './',
